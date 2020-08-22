@@ -37,9 +37,9 @@ const reducer = (state, action) {
 }
 
 const App: FC = () => {
-  const [count, rawDispatch] = useReducer(s => s, {});
+  const [state, rawDispatch] = useReducer(reducer, {});
   const dispatch = useEnhancer(
-    count,
+    state,
     rawDispatch,
     fakeThunk,
     fakeLog,

@@ -53,3 +53,7 @@ function useEnhancer(store: any, dispatch: any, ...middlewares: any[]): any {
 }
 
 export default useEnhancer;
+
+export * from './middlewares';
+
+export * from './type';

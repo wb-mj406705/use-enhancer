@@ -49,9 +49,7 @@ const App = () => {
     state, 
     rawDispatch, 
     thunk,
-    log,
-    saga,
-    all,
+    () => next => async () => await next(),
   );
   React.useEffect(() => {
     dispatch(async () => {

@@ -5,6 +5,7 @@ import {
   Reducer,
   ReducerState,
   Dispatch,
+  useRef,
 } from 'react';
 import { unstable_batchedUpdates as batch } from 'react-dom';
 import { compose } from './utils/compose';
@@ -25,8 +26,13 @@ function useEnhancer<
   ...middlewares: TMiddleware[]
 ): Dispatch<ReducerState<R>>; 
 function useEnhancer(store: any, dispatch: any, ...middlewares: any[]): any {
+  const callbackRef = useRef<typeof dispatch>();
+  if(callbackRef.current) {
+    return callbackRef.current;
+  }
   if(middlewares.length === 0) {
-    return dispatch;
+    callbackRef.current = dispatch;
+    return callbackRef.current;
   }
   let { callback } = compose(
     middlewares.map(_m => _m(store, dispatch)), 
@@ -42,7 +48,8 @@ function useEnhancer(store: any, dispatch: any, ...middlewares: any[]): any {
       }
     }
   )!;
-  return callback;
+  callbackRef.current = callback;
+  return callbackRef.current;
 }
 
 export default useEnhancer;

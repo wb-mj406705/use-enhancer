@@ -4,25 +4,14 @@ import * as ReactDOM from 'react-dom';
 import useEnhancer from '../.';
 
 const thunk = () => next => async action => {
+  if(!action) {
+    await next();
+    return;
+  }
   if(typeof action === 'function') {
     action = await action();
   }
   await next(action);
-};
-const log = () => next => async () => {
-  console.log('i am log brefore');
-  await next();
-  console.log('i am log after');
-};
-const saga = () => next => async () => {
-  console.log('i am sage before');
-  await next();
-  console.log('i am saga after');
-};
-const all = () => next => async () => {
-  console.log('i am all before');
-  await next();
-  console.log('i am all after');
 };
 
 const reducer = (state, action) => {
@@ -48,14 +37,14 @@ const App = () => {
   const dispatch = useEnhancer(
     state, 
     rawDispatch, 
-    thunk,
     () => next => async () => await next(),
+    thunk,
   );
   React.useEffect(() => {
     dispatch(async () => {
       await new Promise(r => setTimeout(() => {
         r();
-      }, 3000));
+      }, 1000));
       return ({ type: 'ASYNC_ACTION', payload: { value: 'async' } });
     })
   }, [])

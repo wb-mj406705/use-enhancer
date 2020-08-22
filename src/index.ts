@@ -8,8 +8,7 @@ import {
   useRef,
 } from 'react';
 import { unstable_batchedUpdates as batch } from 'react-dom';
-import { compose } from './utils';
-import { forward } from './middlewares';
+import { compose, isPlainObject } from './utils';
 import { TMiddlewareWithoutAction, TMiddleware } from './type';
 
 function useEnhancer<
@@ -36,13 +35,15 @@ function useEnhancer(store: any, dispatch: any, ...middlewares: any[]): any {
     return callbackRef.current;
   }
   let { callback } = compose(
-    [...middlewares, forward].map(_m => _m(store, dispatch)), 
+    middlewares.map(_m => _m(store, dispatch)), 
     {
       onTarget: effect => {
         batch(() => {
           while(effect) {
             const { action, next } = effect;
-            dispatch(action);
+            if(isPlainObject(action)) {
+              dispatch(action);
+            }
             effect = next;
           }
         })

@@ -1,4 +1,4 @@
-import { isPlainObject } from './isplainobject';
+import { check } from './check';
 import { TNext } from './type';
 
 type TCompose = (callbacks: TCallback[], options?: Partial<TOptions>) => TLink;
@@ -14,7 +14,7 @@ type TLink = {
 type TAction = {
   type: string;
   payload: any;
-}
+} | null;
 
 type TEffect = {
   action: TAction;
@@ -34,31 +34,21 @@ export const compose: TCompose = (callbacks, options = {}) => {
   let current: TLink = null;
   let effect: TEffect = null;
   let isExecuting: boolean = false;
-  const next: TNext = async action => {
+  let isDispatchWithoutAction: boolean = false;
+  const next: TNext = async derivedAction => {
     if(isExecuting) {
       return;
     }
-    if(action) {
-      if(!isPlainObject(action)) {
-        throw new Error(
-          'Actions must be plain objects. ' +
-            'Use custom middleware for async actions.'
-        );
-      }
-      if (typeof action.type === 'undefined') {
-        throw new Error(
-          'Actions may not have an undefined "type" property. ' +
-            'Have you misspelled a constant?'
-        )
-      };
+    if(derivedAction) {
+      check(derivedAction);
       if(!effect) {
         effect = {
-          action,
+          action: derivedAction,
           next: null,
         }
       } else {
         effect = effect.next = {
-          action,
+          action: derivedAction,
           next: null,
         }
       }
@@ -68,7 +58,11 @@ export const compose: TCompose = (callbacks, options = {}) => {
     }
     current = current!.next;
     if(current) {
-      await current.callback();
+      if(isDispatchWithoutAction) {
+        await current.callback();
+        return;
+      }
+      await current.callback(effect?.action);
       return;
     }
     try {
@@ -84,7 +78,17 @@ export const compose: TCompose = (callbacks, options = {}) => {
   callbacks.forEach(_c => {
     if(!chain) {
       head = tail = chain = {
-        callback: _c(next),
+        callback: action => {
+          if(!action) {
+            isDispatchWithoutAction = true;
+            return _c(next)();
+          }
+          effect = {
+            action,
+            next: null,
+          }
+          return _c(next)(action)
+        },
         prev: null,
         next: null,
       }

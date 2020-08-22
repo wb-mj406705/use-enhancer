@@ -33,13 +33,18 @@ const reducer = (state, action) => {
         ...state,
         ...payload,
       }
+    case 'NORMAL_ACTION':
+      return {
+        ...state,
+        ...payload,
+      }
     default: 
       return state;
   }
 };
 
 const App = () => {
-  const [state, rawDispatch] = React.useReducer(reducer, { init: true });
+  const [state, rawDispatch] = React.useReducer(reducer, { value: 'initial' });
   const dispatch = useEnhancer(
     state, 
     rawDispatch, 
@@ -48,18 +53,22 @@ const App = () => {
     saga,
     all,
   );
-  console.log(state);
   React.useEffect(() => {
     dispatch(async () => {
       await new Promise(r => setTimeout(() => {
         r();
       }, 3000));
-      return ({ type: 'ASYNC_ACTION', payload: { code: 0 } });
+      return ({ type: 'ASYNC_ACTION', payload: { value: 'async' } });
     })
   }, [])
   return (
-    <div>
-      dispatch
+    <div onClick={() => dispatch({
+      type: 'NORMAL_ACTION',
+      payload: {
+        value: 'normal'
+      }
+    })}>
+      {state.value}
     </div>
   );
 };

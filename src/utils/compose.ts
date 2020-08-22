@@ -38,13 +38,13 @@ export const compose: TCompose = (callbacks, options = {}) => {
     if(isExecuting) {
       return;
     }
-    if(!isPlainObject(action)) {
-      throw new Error(
-        'Actions must be plain objects. ' +
-          'Use custom middleware for async actions.'
-      );
-    }
     if(action) {
+      if(!isPlainObject(action)) {
+        throw new Error(
+          'Actions must be plain objects. ' +
+            'Use custom middleware for async actions.'
+        );
+      }
       if (typeof action.type === 'undefined') {
         throw new Error(
           'Actions may not have an undefined "type" property. ' +

@@ -27,7 +27,7 @@ export type TMiddleware = <R extends Reducer<any, any>>(
 export type TNext = <R extends Reducer<any, any>>(action?: ReducerAction<R>) => Promise<void>;
 ```
 
-它有两种形式，一种有action和一种无action版，你可通过闭包访问到store，dispatch（目前感觉是冗余参数，还没用到，页不推荐用），以及next函数。
+它有两种形式，一种有action和一种无action版，你可通过闭包访问到store，dispatch（目前感觉是冗余参数，还没用到，也不推荐用），以及next函数。
 
 ```typescript
 import { TMiddleware } from './type';
@@ -108,6 +108,10 @@ yarn # or npm i
 npm start
 ```
 然后打开http://localhost:1234即可看到效果
+
+## 计划
+
+为了更好的执行副作用，我打算把中间件执行分为三个部分，分别是capture，target（已启用），bubble，类似于DOM事件流，其中capture阶段主要是真正dispatch执行前的操作，比如ajax请求等；target阶段是真正的dispatch阶段，不能打断；bubble阶段是dispatch之后的阶段，比如执行之后重新设置页面title，执行时机我打算放在useEffect执行，即页面绘制完毕后异步执行。这也是我采用双向链表的原因，可以方便的打断。
 
 ## 最后
 希望大家可以多多提意见，多多star，多多pr。

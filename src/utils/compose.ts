@@ -7,6 +7,7 @@ type TLinkCallback = (...args: any[]) => Promise<any>;
 
 type TLink = {
   callback: TLinkCallback;
+  pending: Promise<any> | null;
   prev: TLink;
   next: TLink;
 } | null;
@@ -89,6 +90,7 @@ export const compose: TCompose = (callbacks, options = {}) => {
           }
           return _c(next)(action)
         },
+        pending: null,
         prev: null,
         next: null,
       }
@@ -96,6 +98,7 @@ export const compose: TCompose = (callbacks, options = {}) => {
     }
     tail = tail!.next = {
       callback: _c(next),
+      pending: null,
       prev: tail,
       next: null,
     }

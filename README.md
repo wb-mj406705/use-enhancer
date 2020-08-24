@@ -27,7 +27,7 @@ export type TMiddleware = <R extends Reducer<any, any>>(
 export type TNext = <R extends Reducer<any, any>>(action?: ReducerAction<R>) => Promise<void>;
 ```
 
-他有两种形式，一种有action和一种无action版，你可通过闭包访问到store，dispatch（目前感觉是冗余参数，还没用到，页不推荐用），以及next函数。
+它有两种形式，一种有action和一种无action版，你可通过闭包访问到store，dispatch（目前感觉是冗余参数，还没用到，页不推荐用），以及next函数。
 
 ```typescript
 import { TMiddleware } from './type';

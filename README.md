@@ -8,6 +8,48 @@ use-enhancer如其名，是一个简单且强大的hooks。它基于中间件模
 yarn add @ivliu/use-enhancer # or npm install @ivliu/use-enhancer --save
 ```
 
+## 中间件
+
+我通过中间件的形式来增强dispatch，它编写需要遵循一定的规则（类似于redux中间件形式），一眼看去就是一个复杂的闭包运用。
+
+###  类型声明
+```typescript
+export type TMiddlewareWithoutAction = <R extends ReducerWithoutAction<any>>(
+  store: ReducerStateWithoutAction<R>, 
+  dispatch: DispatchWithoutAction
+) => (next: TNext) => () => Promise<void>;
+
+export type TMiddleware = <R extends Reducer<any, any>>(
+  store: ReducerState<R>, 
+  Dispatch: Dispatch<ReducerState<R>>
+) => (next: TNext) => (action: ReducerAction<R>) => Promise<void>;
+
+export type TNext = <R extends Reducer<any, any>>(action?: ReducerAction<R>) => Promise<void>;
+```
+
+他有两种形式，一种有action和一种无action版，你可通过闭包访问到store，dispatch（目前感觉是冗余参数，还没用到，页不推荐用），以及next函数。
+
+```typescript
+import { TMiddleware } from './type';
+
+export const thunk: TMiddleware = () => next => async action => {
+  if(!action) {
+    await next();
+    return;
+  }
+  if(typeof action === 'function') {
+    action = await action();
+  }
+  await next(action);
+}
+```
+
+以上是内置thunk的定义，大家可以做个参考。
+
+## 派生action
+
+我们执行dispatch的时候会传入一个action（它可以是个对象或者函数），我把它定义为源action，会被传入每个middleware的action形参位置。同时你还可以基于当前action计算出另一个action（你如在thunk内，我们根据函数式action计算出对象action），我把它定义为派生action，把它作为入参传入next函数即可，我会通过单向链表把它们链接起来。当然你不需要担心action链会造成过度渲染的问题，我通过batch函数优化了。
+
 ## 举个例子吧
 
 ```typescript
